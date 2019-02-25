@@ -37,6 +37,10 @@
 #include "sde_crtc.h"
 #include "sde_rm.h"
 #include "sde_trace.h"
+#ifdef CONFIG_KLAPSE
+#include "../sde/klapse.h"
+#endif
+
 /**
  * topology is currently defined by a set of following 3 values:
  * 1. num of layer mixers
