@@ -1477,6 +1477,7 @@ TRACE_EVENT(sched_task_util,
 		__field(u64, latency			)
 		__field(bool, ux_task			)
 		__field(bool, stune_boosted		)
+		__field(bool, is_rtg			)
 	),
 
 	TP_fast_assign(
@@ -1495,14 +1496,15 @@ TRACE_EVENT(sched_task_util,
 		__entry->latency		= (sched_clock() - start_t);
 		__entry->ux_task		= ux_task;
 		__entry->stune_boosted		= stune_boosted;
+		__entry->is_rtg			= task_in_related_thread_group(p);
 	),
 
-	TP_printk("pid=%d comm=%s util=%lu prev_cpu=%d next_cpu=%d backup_cpu=%d target_cpu=%d sync=%d need_idle=%d fastpath=%d placement_boost=%d rtg_cpu=%d latency=%llu uxtop=%d stune_boosted=%d",
+	TP_printk("pid=%d comm=%s util=%lu prev_cpu=%d next_cpu=%d backup_cpu=%d target_cpu=%d sync=%d need_idle=%d fastpath=%d placement_boost=%d rtg_cpu=%d latency=%llu uxtop=%d stune_boosted=%d is_rtg=%d",
 		__entry->pid, __entry->comm, __entry->util, __entry->prev_cpu,
 		__entry->next_cpu, __entry->backup_cpu, __entry->target_cpu,
 		__entry->sync, __entry->need_idle, __entry->fastpath,
 		__entry->placement_boost, __entry->rtg_cpu, __entry->latency,
-		__entry->ux_task, __entry->stune_boosted)
+		__entry->ux_task, __entry->stune_boosted, __entry->is_rtg)
 )
 
 /*
