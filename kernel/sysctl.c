@@ -142,6 +142,8 @@ static int two_hundred = 200;
 static int two_million = 2000000;
 #endif
 
+static int max_swappiness = 200;
+
 unsigned int sysctl_fg_io_opt = 1;
 
 unsigned int sysctl_ext4_fsync_enable = 1;
@@ -1595,7 +1597,7 @@ static struct ctl_table vm_table[] = {
 #ifdef CONFIG_DIRECT_SWAPPINESS
 		.extra2		= &two_hundred,
 #else
-		.extra2		= &one_hundred,
+		.extra2		= &max_swappiness,
 #endif
 	},
 #ifdef CONFIG_DIRECT_SWAPPINESS
