@@ -541,8 +541,13 @@ static inline u64 freq_policy_load(struct rq *rq)
 		break;
 	}
 
-	if (should_apply_suh_freq_boost(cluster))
-		load = div64_u64(load * sysctl_sched_user_hint, (u64)100);
+	if (should_apply_suh_freq_boost(cluster)) {
+		if (is_suh_max())
+			load = sched_ravg_window;
+		else
+			load = div64_u64(load * sysctl_sched_user_hint,
+					 (u64)100);
+	}
 
 done:
 	trace_sched_load_to_gov(rq, aggr_grp_load, tt_load, sched_freq_aggr_en,
@@ -2656,6 +2661,9 @@ void update_best_cluster(struct related_thread_group *grp,
 		return;
 	}
 
+	if (is_suh_max())
+		demand = sched_group_upmigrate;
+
 	if (!grp->skip_min) {
 		if (demand >= sched_group_upmigrate) {
 			grp->skip_min = true;
@@ -2752,12 +2760,15 @@ void set_preferred_cluster(struct related_thread_group *grp)
 }
 
 int update_preferred_cluster(struct related_thread_group *grp,
-		struct task_struct *p, u32 old_load)
+		struct task_struct *p, u32 old_load, bool from_tick)
 {
 	u32 new_load = task_load(p);
 
 	if (!grp || !p->grp)
 		return 0;
+
+	if (unlikely(from_tick && is_suh_max()))
+		return 1;
 
 	/*
 	 * Update if task's load has changed significantly or a complete window
@@ -3033,7 +3044,6 @@ static bool is_cluster_hosting_top_app(struct sched_cluster *cluster)
 
 	return (is_min_capacity_cluster(cluster) == grp_on_min);
 }
-
 
 static unsigned long max_cap[NR_CPUS];
 static unsigned long thermal_cap_cpu[NR_CPUS];
