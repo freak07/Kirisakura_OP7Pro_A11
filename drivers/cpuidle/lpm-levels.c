@@ -60,7 +60,6 @@
 #define SCLK_HZ (32768)
 #define PSCI_POWER_STATE(reset) (reset << 30)
 #define PSCI_AFFINITY_LEVEL(lvl) ((lvl & 0x3) << 24)
-#define BIAS_HYST (bias_hyst * NSEC_PER_MSEC)
 
 
 static struct system_pm_ops *sys_pm_ops;
@@ -73,8 +72,6 @@ struct lpm_cluster *lpm_root_node;
 static bool lpm_prediction = true;
 module_param_named(lpm_prediction, lpm_prediction, bool, 0664);
 
-static uint32_t bias_hyst;
-module_param_named(bias_hyst, bias_hyst, uint, 0664);
 static bool lpm_ipi_prediction = true;
 module_param_named(lpm_ipi_prediction, lpm_ipi_prediction, bool, 0664);
 
@@ -612,24 +609,6 @@ static void clear_predict_history(void)
 }
 
 static void update_history(struct cpuidle_device *dev, int idx);
-
-static inline bool is_cpu_biased(int cpu, uint64_t *bias_time)
-{
-	u64 now = sched_clock();
-	u64 last = sched_get_cpu_last_busy_time(cpu);
-	u64 diff = 0;
-
-	if (!last)
-		return false;
-
-	diff = now - last;
-	if (diff < BIAS_HYST) {
-		*bias_time = BIAS_HYST - diff;
-		return true;
-	}
-
-	return false;
-}
 
 #ifdef CONFIG_CONTROL_CENTER
 static inline bool lpm_disallowed(s64 sleep_us, int cpu, struct lpm_cpu *pm_cpu)
