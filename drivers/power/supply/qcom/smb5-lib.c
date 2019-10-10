@@ -8119,6 +8119,11 @@ static void retrigger_dash_work(struct work_struct *work)
 		chg->ck_dash_count = 0;
 		return;
 	}
+	if (chg->pd_active) {
+		chg->ck_dash_count = 0;
+		pr_info("pd_active return retrigger_dash\n");
+		return;
+	}
 
 	if (chg->ck_dash_count >= DASH_CHECK_COUNT) {
 		pr_info("retrger dash\n");
