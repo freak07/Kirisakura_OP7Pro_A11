@@ -36,11 +36,16 @@ static s64 last_get_time;
 unsigned int sysctl_sched_busy_hyst_enable_cpus;
 unsigned int sysctl_sched_busy_hyst;
 unsigned int sysctl_sched_coloc_busy_hyst_enable_cpus = 112;
-unsigned int sysctl_sched_coloc_busy_hyst = 39000000;
+unsigned int sysctl_sched_coloc_busy_hyst_cpu[NR_CPUS] = {
+		[0 ... NR_CPUS-1] = 39000000 };
 unsigned int sysctl_sched_coloc_busy_hyst_max_ms = 5000;
+unsigned int sysctl_sched_coloc_busy_hyst_cpu_busy_pct[NR_CPUS] = {
+		[0 ... NR_CPUS-1] = 10 };
 static DEFINE_PER_CPU(atomic64_t, busy_hyst_end_time) = ATOMIC64_INIT(0);
 #endif
 static DEFINE_PER_CPU(u64, hyst_time);
+static DEFINE_PER_CPU(u64, coloc_hyst_busy);
+static DEFINE_PER_CPU(u64, coloc_hyst_time);
 
 #define NR_THRESHOLD_PCT		15
 #define MAX_RTGB_TIME (sysctl_sched_coloc_busy_hyst_max_ms * NSEC_PER_MSEC)
@@ -108,7 +113,7 @@ void sched_get_nr_running_avg(struct sched_avg_stats *stats)
 	}
 
 	for_each_possible_cpu(cpu) {
-		if (per_cpu(hyst_time, cpu)) {
+		if (per_cpu(coloc_hyst_time, cpu)) {
 			any_hyst_time = true;
 			break;
 		}
@@ -124,21 +129,25 @@ EXPORT_SYMBOL(sched_get_nr_running_avg);
 #ifdef CONFIG_SCHED_WALT
 void sched_update_hyst_times(void)
 {
-	u64 std_time, rtgb_time;
 	bool rtgb_active;
 	int cpu;
+	unsigned long cpu_cap, coloc_busy_pct;
 
 	rtgb_active = is_rtgb_active() && (sched_boost() != CONSERVATIVE_BOOST)
 			&& (get_rtgb_active_time() < MAX_RTGB_TIME);
 
 	for_each_possible_cpu(cpu) {
-		std_time = (BIT(cpu)
+		cpu_cap = arch_scale_cpu_capacity(NULL, cpu);
+		coloc_busy_pct = sysctl_sched_coloc_busy_hyst_cpu_busy_pct[cpu];
+		per_cpu(hyst_time, cpu) = (BIT(cpu)
 			     & sysctl_sched_busy_hyst_enable_cpus) ?
 			     sysctl_sched_busy_hyst : 0;
-		rtgb_time = ((BIT(cpu)
+		per_cpu(coloc_hyst_time, cpu) = ((BIT(cpu)
 			     & sysctl_sched_coloc_busy_hyst_enable_cpus)
-			     && rtgb_active) ? sysctl_sched_coloc_busy_hyst : 0;
-		per_cpu(hyst_time, cpu) = max(std_time, rtgb_time);
+			     && rtgb_active) ?
+			     sysctl_sched_coloc_busy_hyst_cpu[cpu] : 0;
+		per_cpu(coloc_hyst_busy, cpu) = mult_frac(cpu_cap,
+							coloc_busy_pct, 100);
 	}
 }
 
@@ -147,9 +156,11 @@ void sched_update_hyst_times(void)
 static inline void update_busy_hyst_end_time(int cpu, bool dequeue,
 				unsigned long prev_nr_run, u64 curr_time)
 {
-	bool nr_run_trigger = false, load_trigger = false;
+	bool nr_run_trigger = false;
+	bool load_trigger = false, coloc_load_trigger = false;
+	u64 agg_hyst_time;
 
-	if (!per_cpu(hyst_time, cpu))
+	if (!per_cpu(hyst_time, cpu) && !per_cpu(coloc_hyst_time, cpu))
 		return;
 
 	if (prev_nr_run >= BUSY_NR_RUN && per_cpu(nr, cpu) < BUSY_NR_RUN)
@@ -159,14 +170,40 @@ static inline void update_busy_hyst_end_time(int cpu, bool dequeue,
 			capacity_orig_of(cpu))
 		load_trigger = true;
 
-	if (nr_run_trigger || load_trigger)
+	if (dequeue && cpu_util(cpu) > per_cpu(coloc_hyst_busy, cpu))
+		coloc_load_trigger = true;
+
+	agg_hyst_time = max((nr_run_trigger || load_trigger) ?
+				per_cpu(hyst_time, cpu) : 0,
+				(nr_run_trigger || coloc_load_trigger) ?
+				per_cpu(coloc_hyst_time, cpu) : 0);
+
+	if (agg_hyst_time)
 		atomic64_set(&per_cpu(busy_hyst_end_time, cpu),
-				curr_time + per_cpu(hyst_time, cpu));
+				curr_time + agg_hyst_time);
 }
 #else
 static inline void update_busy_hyst_end_time(int cpu, bool dequeue,
 				unsigned long prev_nr_run, u64 curr_time)
 {
+}
+#endif
+
+#ifdef CONFIG_SCHED_WALT
+int sched_busy_hyst_handler(struct ctl_table *table, int write,
+				void __user *buffer, size_t *lenp, loff_t *ppos)
+{
+	int ret;
+
+	if (table->maxlen > (sizeof(unsigned int) * num_possible_cpus()))
+		table->maxlen = sizeof(unsigned int) * num_possible_cpus();
+
+	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
+
+	if (!ret && write)
+		sched_update_hyst_times();
+
+	return ret;
 }
 #endif
 
