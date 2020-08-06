@@ -14,6 +14,7 @@
 #include <linux/oem/oneplus_healthinfo.h>
 #endif
 #include "walt.h"
+#include <trace/events/sched.h>
 
 #include <oneplus/uxcore/opchain_helper.h>
 
@@ -1864,6 +1865,9 @@ retry:
 				sysctl_launcher_boost_enabled && sysctl_uxchain_enabled)
 				continue;
 #endif
+
+			trace_sched_cpu_util(cpu);
+
 			if (cpu_isolated(cpu))
 				continue;
 
