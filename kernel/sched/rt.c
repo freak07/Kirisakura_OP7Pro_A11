@@ -1870,10 +1870,10 @@ retry:
 			if (sched_cpu_high_irqload(cpu))
 				continue;
 
-			util = cpu_util(cpu);
-
 			if (__cpu_overutilized(cpu, tutil))
 				continue;
+
+			util = cpu_util(cpu);
 
 			if (best_cpu_is_claimed) {
 				best_cpu_idle_idx = cpu_idle_idx;
