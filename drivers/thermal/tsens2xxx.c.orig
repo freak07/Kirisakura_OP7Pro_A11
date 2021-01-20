@@ -155,7 +155,12 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 	sensor_addr = TSENS_TM_SN_STATUS(tmdev->tsens_tm_addr);
 	trdy = TSENS_TM_TRDY(tmdev->tsens_tm_addr);
 
+<<<<<<< HEAD
+	code = readl_relaxed_no_log(trdy);
+
+=======
 	code = readl_relaxed(trdy);
+>>>>>>> 48aae934384d... treewide: remove remaining _no_log() usage
 	if (!((code & TSENS_TM_TRDY_FIRST_ROUND_COMPLETE) >>
 		    TSENS_TM_TRDY_FIRST_ROUND_COMPLETE_SHIFT)) {
 		if (atomic_read(&in_tsens_reinit)) {
@@ -169,7 +174,7 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 		/* Wait for 2.5 ms for tsens controller to recover */
 		do {
 			udelay(500);
-			code = readl_relaxed(trdy);
+			code = readl_relaxed_no_log(trdy);
 			if (code & TSENS_TM_TRDY_FIRST_ROUND_COMPLETE) {
 				TSENS_DUMP(tmdev, "%s",
 					"tsens controller recovered\n");
