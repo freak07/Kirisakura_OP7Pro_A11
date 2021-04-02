@@ -901,6 +901,9 @@ static int dsi_panel_update_backlight(struct dsi_panel *panel,
 	dsi = &panel->mipi_device;
 	mode = panel->cur_mode;
 
+	if (panel->bl_config.bl_inverted_dbv)
+		bl_lvl = (((bl_lvl & 0xff) << 8) | (bl_lvl >> 8));
+
 	saved_backlight = bl_lvl;
 
 	if (panel->is_hbm_enabled) {
@@ -2899,6 +2902,9 @@ static int dsi_panel_parse_bl_config(struct dsi_panel *panel)
 	} else {
 		panel->bl_config.brightness_default_level = val;
 	}
+
+	panel->bl_config.bl_inverted_dbv = utils->read_bool(utils->data,
+		"qcom,mdss-dsi-bl-inverted-dbv");
 
 	if (panel->bl_config.type == DSI_BACKLIGHT_PWM) {
 		rc = dsi_panel_parse_bl_pwm_config(panel);
