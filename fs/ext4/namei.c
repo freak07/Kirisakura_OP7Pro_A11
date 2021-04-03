@@ -2517,11 +2517,10 @@ again:
 						   (frame - 1)->bh);
 			if (err)
 				goto journal_error;
-			if (restart) {
-				err = ext4_handle_dirty_dx_node(handle, dir,
-							   frame->bh);
+			err = ext4_handle_dirty_dx_node(handle, dir,
+							frame->bh);
+			if (err)
 				goto journal_error;
-			}
 		} else {
 			struct dx_root *dxroot;
 			memcpy((char *) entries2, (char *) entries,
@@ -3973,7 +3972,7 @@ end_rename:
 	if (whiteout) {
 		if (retval) {
 			ext4_setent(handle, &old,
-				old.inode->i_ino, old_file_type);
+				      old.inode->i_ino, old_file_type);
 			drop_nlink(whiteout);
 		}
 		unlock_new_inode(whiteout);
