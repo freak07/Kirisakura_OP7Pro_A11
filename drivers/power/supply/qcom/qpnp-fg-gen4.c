@@ -1095,7 +1095,7 @@ static int fg_gen4_get_prop_soc_scale(struct fg_gen4_chip *chip)
 	return rc;
 }
 
-#define SDAM1_MEM_127_REG	0xB0BF
+#define SDAM1_MEM_124_REG	0xB0BC
 static int fg_gen4_set_calibrate_level(struct fg_gen4_chip *chip, int val)
 {
 	struct fg_dev *fg = &chip->fg;
@@ -1120,9 +1120,10 @@ static int fg_gen4_set_calibrate_level(struct fg_gen4_chip *chip, int val)
 		val = chip->dt.force_calib_level;
 
 	buf = (u8)val;
-	rc = fg_write(fg, SDAM1_MEM_127_REG, &buf, 1);
+	rc = fg_write(fg, SDAM1_MEM_124_REG, &buf, 1);
 	if (rc < 0) {
-		pr_err("Error in writing to 0xB0BF, rc=%d\n", rc);
+		pr_err("Error in writing to 0x%04X, rc=%d\n",
+			SDAM1_MEM_124_REG, rc);
 		return rc;
 	}
 
@@ -1133,9 +1134,10 @@ static int fg_gen4_set_calibrate_level(struct fg_gen4_chip *chip, int val)
 		return rc;
 	}
 
-	rc = fg_read(fg, SDAM1_MEM_127_REG, &buf, 1);
+	rc = fg_read(fg, SDAM1_MEM_124_REG, &buf, 1);
 	if (rc < 0) {
-		pr_err("Error in reading from 0xB0BF, rc=%d\n", rc);
+		pr_err("Error in reading from 0x%04X, rc=%d\n",
+			SDAM1_MEM_124_REG, rc);
 		return rc;
 	}
 
@@ -4422,7 +4424,7 @@ static int fg_psy_get_property(struct power_supply *psy,
 				pval->intval =
 					external_fg->get_battery_temperature();
 		} else
-			pval->intval = -400;
+				pval->intval = -400;
 		break;
 	case POWER_SUPPLY_PROP_BATTERY_HEALTH:
 		if (fg->use_external_fg && external_fg
@@ -4484,8 +4486,11 @@ static int fg_psy_get_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
 		rc = fg_gen4_get_nominal_capacity(chip, &temp);
-		if (!rc)
+		if (rc)
 			pval->intval = -EINVAL;
+		else
+			pval->intval = (int)temp;
+
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
 		rc = fg_gen4_get_charge_counter(chip, &pval->intval);
