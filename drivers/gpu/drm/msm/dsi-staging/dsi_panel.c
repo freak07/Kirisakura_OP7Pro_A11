@@ -259,6 +259,8 @@ char gamma_para[2][413] = {
 };
 EXPORT_SYMBOL(gamma_para);
 
+void sched_set_refresh_rate(void);
+
 const char *gamma_cmd_set_map[DSI_GAMMA_CMD_SET_MAX] = {
 	"dsi-gamma-cmd-set-switch-60hz",
 	"dsi-gamma-cmd-set-switch-90hz",
@@ -950,7 +952,7 @@ static int dsi_panel_update_backlight(struct dsi_panel *panel,
 		}
 
 		rc = mipi_dsi_dcs_set_display_brightness_samsung(dsi, bl_lvl);
-		pr_err("backlight = %d\n", bl_lvl);
+		pr_debug("backlight = %d\n", bl_lvl);
 		cur_backlight = bl_lvl;
 		cur_fps = mode_fps;
 		cur_h = panel->cur_mode->timing.h_active;
@@ -5042,6 +5044,8 @@ int dsi_panel_switch(struct dsi_panel *panel)
 		if (mode_fps == 90) {
 			rc = dsi_panel_tx_gamma_cmd_set(panel, DSI_GAMMA_CMD_SET_SWITCH_90HZ);
 			pr_err("Send DSI_GAMMA_CMD_SET_SWITCH_90HZ cmds\n");
+			pr_err("[WALT-Disp] set 90fps WALT RAVG_Window\n");
+			sched_set_refresh_rate();
 			if (rc)
 				pr_err("[%s] Failed to send DSI_GAMMA_CMD_SET_SWITCH_90HZ cmds, rc=%d\n",
 					panel->name, rc);
@@ -5049,6 +5053,8 @@ int dsi_panel_switch(struct dsi_panel *panel)
 		else {
 			rc = dsi_panel_tx_gamma_cmd_set(panel, DSI_GAMMA_CMD_SET_SWITCH_60HZ);
 			pr_err("Send DSI_GAMMA_CMD_SET_SWITCH_60HZ cmds\n");
+			pr_err("[WALT-Disp] set 60fps WALT RAVG_Window\n");
+			sched_set_refresh_rate();
 			if (rc)
 				pr_err("[%s] Failed to send DSI_GAMMA_CMD_SET_SWITCH_60HZ cmds, rc=%d\n",
 					panel->name, rc);
