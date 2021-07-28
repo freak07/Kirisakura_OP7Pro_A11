@@ -41,6 +41,20 @@
 #define GOLD_CPU_NUMBER 4
 #define GOLD_PLUS_CPU_NUMBER 7
 
+#if 1
+// default 1, touchboost is stock behavior
+static int touchboost = 1;
+module_param(touchboost, int, 0644);
+static int batterysaver = 0; // 0 - 1 - 3
+module_param(batterysaver, int, 0644);
+// default 0, seriously cutting back max freqs for sunshine inside car/long gps tracking...
+// 1 medium cutback, 2 full cutback, 3 full cutback and disable touch freq min boost
+static int batterysaver_level = 0; // 0 - 1 - 3
+module_param(batterysaver_level, int, 0644);
+#define BATTERY_SAVER_MAX_LEVEL 3
+#endif
+
+
 static LIST_HEAD(cpufreq_policy_list);
 
 static inline bool policy_is_inactive(struct cpufreq_policy *policy)
@@ -529,6 +543,31 @@ void cpufreq_disable_fast_switch(struct cpufreq_policy *policy)
 }
 EXPORT_SYMBOL_GPL(cpufreq_disable_fast_switch);
 
+// cpu max freqs for saver modes...
+static int batterysaver_max_freqs[BATTERY_SAVER_MAX_LEVEL][8] = {
+	// little x 4 , big x 3, prime x 1 - clusters
+	// saver 1
+	{ 1708800,1708800,1708800,1708800,
+	2016000,2016000,2016000,
+	2227200 },
+	// saver 2
+	{ 1555200,1555200,1555200,1555200,
+	1708800,1708800,1708800,
+	1804800 },
+	// saver 3
+	{ 1113600,1113600,1113600,1113600,
+	1171200,1171200,1171200,
+	1171200 }
+};
+
+static int get_cpu_max_for_core(unsigned int cpu, int batterysaverlevel) {
+	if (cpu<=7 && batterysaverlevel>0 && batterysaverlevel<=BATTERY_SAVER_MAX_LEVEL) {
+		return batterysaver_max_freqs[batterysaverlevel-1][cpu];
+	} else {
+	    return -EINVAL;
+	}
+}
+
 /**
  * cpufreq_driver_resolve_freq - Map a target frequency to a driver-supported
  * one.
@@ -546,6 +585,14 @@ unsigned int cpufreq_driver_resolve_freq(struct cpufreq_policy *policy,
 	if (likely(policy->cc_enable))
 		target_freq = clamp_val(target_freq, policy->cc_min, policy->cc_max);
 #endif
+	if (batterysaver>0) {
+		unsigned int cpu = policy->cpu;
+		int max = 0;
+		max = get_cpu_max_for_core(cpu,batterysaver_level);
+		pr_debug("%s max freq for core: %u saver_level %d  cpu: %d  target: %u",__func__,max,batterysaver_level,cpu,target_freq);
+		if (max<=0) max = policy->max;
+		target_freq = clamp_val(target_freq, policy->min, max);
+	} else
 	target_freq = clamp_val(target_freq, policy->min, policy->max);
 	policy->cached_target_freq = target_freq;
 
@@ -753,6 +800,52 @@ static ssize_t show_scaling_cur_freq(struct cpufreq_policy *policy, char *buf)
 static int cpufreq_set_policy(struct cpufreq_policy *policy,
 				struct cpufreq_policy *new_policy);
 
+#if 1
+
+// touch boost min freq to be skipped...
+#define SKIP_MIN_LITTLE 1113600
+#define SKIP_MIN_BIG 1286400
+#define REPLACE_MIN_LITTLE 844800
+
+static int skip_or_tune_min_freq(struct cpufreq_policy *cur_policy, struct cpufreq_policy *new_policy) {
+	unsigned int cpu = cur_policy->cpu;
+	if (batterysaver_level==BATTERY_SAVER_MAX_LEVEL) {
+		int saver_max = 0;
+		saver_max = get_cpu_max_for_core(cpu,batterysaver_level);
+		if (saver_max>=0 && saver_max < new_policy->min) {
+			// if battery saver max freq is BELOW the new min (freq boosting supposedly) cut back to saver maximum...
+			new_policy->min = saver_max;
+		}
+	}
+	if (!touchboost) {
+		// touchboosting inactive, look for high MIN freq setting calls
+		// coming from INTERACTIVE state of power hal / user space thru the scale freq paths.
+		// Skip those specific MIN freqs of Touch boosting, so lower idle freqs can still be used more
+		// if they suffice for the load. Could spare some voltage.
+		int cur_min_freq = cur_policy->min;
+		int new_min_freq = new_policy->min;
+		int cur_u_freq = cur_policy->user_policy.min;
+		int new_u_freq = new_policy->user_policy.min;
+		bool core_BIG = cpu > 3;
+		pr_debug("%s evaluating : core_BIG %d . cur %d new %d user cur %d new %d\n",
+			__func__, core_BIG, cur_min_freq, new_min_freq, cur_u_freq, new_u_freq);
+		if (cur_min_freq<new_min_freq && ((!core_BIG && new_min_freq == SKIP_MIN_LITTLE) || (core_BIG && new_min_freq == SKIP_MIN_BIG))) {
+			pr_info("%s skipping scale MIN set : core_BIG %d . cur %d new %d user cur %d new %d\n",
+				__func__, core_BIG, cur_min_freq, new_min_freq, cur_u_freq, new_u_freq);
+			if (!core_BIG) {
+				// in case of little cluster, don't skip, but replace MIN freq with a lower one
+				// to skip frame drops when full system idles without even mild load.
+				new_policy->min = REPLACE_MIN_LITTLE;
+				return 0;
+			}
+			return 1;
+		}
+	}
+	return 0;
+}
+
+#endif
+
 /**
  * cpufreq_per_cpu_attr_write() / store_##file_name() - sysfs write access
  */
@@ -775,6 +868,10 @@ static ssize_t store_##file_name					\
 		return -EINVAL;						\
 									\
 	temp = new_policy.object;					\
+	if (&policy->object == &policy->min && 				\
+		skip_or_tune_min_freq(policy, &new_policy))		\
+		return count;						\
+									\
 	ret = cpufreq_set_policy(policy, &new_policy);		\
 	if (!ret)							\
 		policy->user_policy.object = temp;			\
