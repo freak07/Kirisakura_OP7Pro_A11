@@ -1327,7 +1327,7 @@ static int cc_dump_list_show(char *buf, const struct kernel_param *kp)
 		++size;
 	}
 	if (size)
-		cnt += snprintf(buf + cnt, PAGE_SIZE - cnt, "\n", rq->idx);
+		cnt += snprintf(buf + cnt, PAGE_SIZE - cnt, "%d\n", rq->idx);
 	cnt += snprintf(buf + cnt, PAGE_SIZE - cnt, "pending list: size: %d\n", size);
 
 	spin_unlock(&cc_async_lock);
@@ -1369,7 +1369,7 @@ static int cc_dump_status_show(char *buf, const struct kernel_param *kp)
 	val = query_ddrfreq();
 	cnt += snprintf(buf + cnt, PAGE_SIZE - cnt, "ddrfreq: %llu\n", val);
 	cnt += snprintf(buf + cnt, PAGE_SIZE - cnt,
-			"expected ddrfreq: %lu\n", atomic_read(&cc_expect_ddrfreq));
+			"expected ddrfreq: %d\n", atomic_read(&cc_expect_ddrfreq));
 	return cnt;
 }
 
@@ -1467,7 +1467,7 @@ static int cc_ccdm_status_show(char *buf, const struct kernel_param *kp)
 
 	for (i = 0; i < 3; ++i) {
 		cnt += snprintf(buf + cnt, PAGE_SIZE - cnt,
-		"tb_freq_boost: clus %lld, extra util %lld\n",
+		"tb_freq_boost: clus %d, extra util %lld\n",
 		i, info.tb_freq_boost[i]);
 	}
 	cnt += snprintf(buf + cnt, PAGE_SIZE - cnt,

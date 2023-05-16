@@ -12,6 +12,11 @@
 #include <linux/module.h>
 
 #define DM_MSG_PREFIX "bow"
+
+#ifdef SECTOR_SIZE
+    #undef SECTOR_SIZE
+#endif
+
 #define SECTOR_SIZE 512
 
 struct log_entry {

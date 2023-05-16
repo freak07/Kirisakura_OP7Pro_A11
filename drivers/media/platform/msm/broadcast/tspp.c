@@ -2251,7 +2251,7 @@ int tspp_set_key(u32 dev, u32 channel_id, struct tspp_key *key)
 		}
 	}
 	if (i == TSPP_NUM_PRIORITIES) {
-		pr_err("%s: no encryption on this channel\n");
+		pr_err("%s: no encryption on this channel\n", __func__);
 		return -ENOKEY;
 	}
 

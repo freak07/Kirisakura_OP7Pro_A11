@@ -116,7 +116,7 @@ ssize_t fts_i2c_wr_store(struct device *dev, struct device_attribute *attr,
 	int i;
 	unsigned int data[9] = {0};
 
-	memset(data, 0x00, ARRAY_SIZE(data));
+	//memset(data, 0x00, sizeof(data)*sizeof(unsigned int));
 	memset(info->cmd_wr_result, 0x00, ARRAY_SIZE(info->cmd_wr_result));
 	ret = sscanf(buf, "%x %x %x %x %x %x %x %x %x ",
 		(data + 8), (data), (data + 1), (data + 2), (data + 3),
@@ -242,7 +242,7 @@ ssize_t fts_i2c_read_store(struct device *dev, struct device_attribute *attr,
 	unsigned int data[9] = {0};
 
 	byte_count_read = 0;
-	memset(data, 0x00, ARRAY_SIZE(data));
+	//memset(data, 0x00, sizeof(data)*sizeof(unsigned int));
 	memset(info->cmd_read_result, 0x00, ARRAY_SIZE(info->cmd_read_result));
 	ret = sscanf(buf, "%x %x %x %x %x %x %x %x %x ",
 		(data + 8), (data), (data + 1), (data + 2), (data + 3),
@@ -326,7 +326,7 @@ ssize_t fts_i2c_write_store(struct device *dev, struct device_attribute *attr,
 	unsigned int byte_count = 0;
 	int i;
 
-	memset(data, 0x00, ARRAY_SIZE(data));
+	memset(data, 0x00, CMD_RESULT_STR_LEN*sizeof(unsigned int));
 	memset(pAddress_i2c, 0x00, ARRAY_SIZE(pAddress_i2c));
 	memset(info->cmd_write_result, 0x00,
 			ARRAY_SIZE(info->cmd_write_result));
