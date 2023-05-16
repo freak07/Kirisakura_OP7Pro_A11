@@ -3574,7 +3574,7 @@ static int sde_kms_hw_init(struct msm_kms *kms)
 			rc = PTR_ERR(sde_kms->hw_vbif[vbif_idx]);
 			if (!sde_kms->hw_vbif[vbif_idx])
 				rc = -EINVAL;
-			SDE_ERROR("failed to init vbif %d: %d\n", vbif_idx, rc);
+			SDE_ERROR("failed to init vbif %d: %d\n", (int)vbif_idx, rc);
 			sde_kms->hw_vbif[vbif_idx] = NULL;
 			goto power_error;
 		}
