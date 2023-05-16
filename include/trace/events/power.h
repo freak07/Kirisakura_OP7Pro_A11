@@ -208,7 +208,7 @@ TRACE_EVENT(find_freq,
 		(unsigned long)__entry->target_freq,
 		(unsigned long)__entry->final_idx,
 		(unsigned long)__entry->final_freq,
-		(unsigned long)__entry->cpu,
+		__entry->cpu,
 		 __entry->op_enable, __entry->dp_level_mode, __entry->dp_level)
 );
 
