@@ -406,8 +406,8 @@ static int memlat_hp_restart_events(unsigned int cpu, bool cpu_up)
 			ret = set_event(&common_evs[i], cpu,
 					cpu_grp->common_ev_ids[i], attr);
 			if (ret) {
-				pr_err("event %d not set for cpu %d ret %d\n",
-					cpu_grp->common_ev_ids[i], cpu, ret);
+				pr_err("event ? not set for cpu %d ret %d\n",
+					 cpu, ret);
 				goto exit;
 			}
 		} else {
@@ -426,8 +426,8 @@ static int memlat_hp_restart_events(unsigned int cpu, bool cpu_up)
 			ret = set_event(&mon->miss_ev[idx], cpu,
 							mon->miss_ev_id, attr);
 			if (ret) {
-				pr_err("event %d not set for cpu %d ret %d\n",
-					mon->miss_ev[idx], cpu, ret);
+				pr_err("event ? not set for cpu %d ret %d\n",
+					cpu, ret);
 				goto exit;
 			}
 		} else {
