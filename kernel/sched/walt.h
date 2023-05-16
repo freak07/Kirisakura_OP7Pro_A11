@@ -354,7 +354,7 @@ static inline unsigned int walt_nr_rtg_high_prio(int cpu)
 
 extern bool is_rtgb_active(void);
 extern u64 get_rtgb_active_time(void);
-#define SCHED_PRINT(arg)        printk_deferred("%s=%llu", #arg, arg)
+#define SCHED_PRINT(arg)        printk_deferred("%s=%llu", #arg, (long long unsigned int)arg)
 #define STRG(arg)               #arg
 
 static inline void walt_task_dump(struct task_struct *p)
@@ -429,7 +429,7 @@ static inline void walt_dump(void)
 
 	printk_deferred("============ WALT RQ DUMP START ==============\n");
 	printk_deferred("Sched ktime_get: %llu\n", sched_ktime_clock());
-	printk_deferred("Time last window changed=%lu\n",
+	printk_deferred("Time last window changed=%llu\n",
 			sched_ravg_window_change_time);
 	for_each_online_cpu(cpu) {
 		walt_rq_dump(cpu);
