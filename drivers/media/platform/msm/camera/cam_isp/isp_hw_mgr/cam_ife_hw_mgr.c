@@ -3655,7 +3655,7 @@ static int cam_isp_packet_generic_blob_handler(void *user_data,
 		struct cam_isp_prepare_hw_update_data   *prepare_hw_data;
 
 		if (blob_size < sizeof(struct cam_fps_config)) {
-			CAM_ERR(CAM_ISP, "Invalid fps blob size %u expected %u",
+			CAM_ERR(CAM_ISP, "Invalid fps blob size %u expected %lu",
 				blob_size, sizeof(struct cam_fps_config));
 			return -EINVAL;
 		}

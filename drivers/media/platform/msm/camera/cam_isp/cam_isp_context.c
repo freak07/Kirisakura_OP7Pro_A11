@@ -146,7 +146,7 @@ static void cam_isp_ctx_dump_req(struct cam_isp_ctx_req *req_isp)
 				req_isp->cfg[i].len - 1);
 			if (len < (buf_end - buf_start + 1)) {
 				CAM_ERR(CAM_ISP,
-					"Invalid len %lld buf_start-end=%d",
+					"Invalid len %ld buf_start-end=%d",
 					len, (buf_end - buf_start + 1));
 				if (cam_mem_put_cpu_buf(req_isp->cfg[i].handle))
 					CAM_WARN(CAM_ISP,
