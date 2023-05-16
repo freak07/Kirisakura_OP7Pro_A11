@@ -1353,7 +1353,7 @@ int mhi_process_tsync_ev_ring(struct mhi_controller *mhi_cntrl,
 	struct mhi_event_ctxt *er_ctxt =
 		&mhi_cntrl->mhi_ctxt->er_ctxt[mhi_event->er_index];
 	struct mhi_timesync *mhi_tsync = mhi_cntrl->mhi_tsync;
-	u32 sequence;
+	u64 sequence;
 	u64 remote_time;
 	int ret = 0;
 
@@ -1394,7 +1394,7 @@ int mhi_process_tsync_ev_ring(struct mhi_controller *mhi_cntrl,
 	mutex_lock(&mhi_cntrl->tsync_mutex);
 
 	if (unlikely(mhi_tsync->int_sequence != sequence)) {
-		MHI_ASSERT(1, "Unexpected response:0x%llx Expected:0x%llx\n",
+		MHI_ASSERT(1, "Unexpected response:0x%llx Expected:0x%x\n",
 			   sequence, mhi_tsync->int_sequence);
 
 		mhi_device_put(mhi_cntrl->mhi_dev,
