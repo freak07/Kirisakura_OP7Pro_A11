@@ -410,7 +410,7 @@ static ssize_t fd_show(struct kobject *kobj,
 	struct kobj_attribute *attr,
 	char *buf)
 {
-	return snprintf(buf, sizeof(buf), "%d\n", qvr_external_sensor.fd);
+	return sprintf(buf, "%d\n", qvr_external_sensor.fd);
 }
 
 static ssize_t fd_store(struct kobject *kobj,
@@ -657,14 +657,14 @@ static int __init qvr_external_sensor_init(void)
 
 	ret = alloc_chrdev_region(&sensor->dev_no, 0, 1, "qvr_external_sensor");
 	if (ret < 0) {
-		pr_err("%s: alloc_chrdev_region failed");
+		pr_err("%s: alloc_chrdev_region failed", __func__);
 		return ret;
 	}
 	cdev_init(&sensor->cdev, &qvr_external_sensor_ops);
 	ret = cdev_add(&sensor->cdev, sensor->dev_no, 1);
 
 	if (ret < 0) {
-		pr_err("%s: cdev_add failed");
+		pr_err("%s: cdev_add failed", __func__);
 		return ret;
 	}
 	sensor->class = class_create(THIS_MODULE, "qvr_external_sensor");

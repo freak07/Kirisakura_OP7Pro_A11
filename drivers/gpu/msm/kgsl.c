@@ -4751,7 +4751,7 @@ static void kgsl_send_uevent_notify(struct kgsl_device *desc, char *comm,
 	kfree(envp[0]);
 }
 
-static int current_pid = -1;
+struct pid *current_pid;
 
 static unsigned long
 kgsl_get_unmapped_area(struct file *file, unsigned long addr,
@@ -4812,7 +4812,7 @@ kgsl_get_unmapped_area(struct file *file, unsigned long addr,
 			}
 
 			KGSL_DRV_ERR_RATELIMIT(device,
-				"kgsl additional info: %s VmSize %lu MaxGapCpu %lu MaxGapGpu %lu VA_rnd 0x%llx\n",
+				"kgsl additional info: %s VmSize %lu MaxGapCpu %lu MaxGapGpu %lu VA_rnd 0x%lx\n",
 				current->group_leader->comm, mm->total_vm, largest_gap_cpu,
 				largest_gap_gpu, mm->va_feature_rnd);
 		}

@@ -67,7 +67,7 @@ TRACE_EVENT(net_dev_start_xmit,
 		  "vlan_proto=0x%04x vlan_tci=0x%04x protocol=0x%04x\t"
 		  "ip_summed=%d len=%u data_len=%u network_offset=%d\t"
 		  "transport_offset_valid=%d transport_offset=%d tx_flags=%d\t"
-		  "gso_size=%d gso_segs=%d gso_type=%#x UTC: %ld",
+		  "gso_size=%d gso_segs=%d gso_type=%#x UTC: %lld",
 		  __get_str(name), __entry->queue_mapping, __entry->skbaddr,
 		  __entry->vlan_tagged, __entry->vlan_proto, __entry->vlan_tci,
 		  __entry->protocol, __entry->ip_summed, __entry->len,
@@ -97,7 +97,7 @@ TRACE_EVENT(net_receive_skb_exit,
 
 	),
 
-	TP_printk(" skbaddr=%pK UTC = %ld", __entry->skbaddr, __entry->utctime)
+	TP_printk(" skbaddr=%pK UTC = %lld", __entry->skbaddr, __entry->utctime)
 );
 
 TRACE_EVENT(net_dev_xmit,
