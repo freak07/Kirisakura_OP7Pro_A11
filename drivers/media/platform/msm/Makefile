@@ -13,4 +13,5 @@ obj-$(CONFIG_TSPP) += broadcast/
 obj-$(CONFIG_DVB_MPQ) += dvb/
 obj-$(CONFIG_MSMB_CAMERA) += camera_v2/
 
+KBUILD_CFLAGS   += -Wno-uninitialized
 KBUILD_CFLAGS   += -Wno-format
