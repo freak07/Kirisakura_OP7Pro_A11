@@ -30,9 +30,11 @@
 #include "../../../../kernel/sched/walt.h"
 #include "../../../../include/linux/cred.h"
 
+/*
 #ifdef CONFIG_ONEPLUS_HEALTHINFO
 #pragma clang diagnostic ignored "-Wincompatible-pointer-types"
 #endif
+*/
 
 struct io_latency_para{
 	bool ctrl;
