@@ -24,7 +24,7 @@
 #include <asoc/wcd934x_registers.h>
 
 //#include "core.h"
-#include "pinctrl-utils.h"
+//#include "pinctrl-utils.h"
 
 #define WCD_REG_DIR_CTL WCD934X_CHIP_TIER_CTRL_GPIO_CTL_OE
 #define WCD_REG_VAL_CTL WCD934X_CHIP_TIER_CTRL_GPIO_CTL_DATA
