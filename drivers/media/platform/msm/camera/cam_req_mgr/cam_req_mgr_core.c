@@ -2696,14 +2696,14 @@ int cam_req_mgr_schedule_request(
 	link = (struct cam_req_mgr_core_link *)
 		cam_get_device_priv(sched_req->link_hdl);
 	if (!link) {
-		CAM_DBG(CAM_CRM, "link ptr NULL %x", sched_req->link_hdl);
+		CAM_DBG(CAM_CRM, "link ptr NULL %llx", sched_req->link_hdl);
 		rc = -EINVAL;
 		goto end;
 	}
 
 	session = (struct cam_req_mgr_core_session *)link->parent;
 	if (!session) {
-		CAM_WARN(CAM_CRM, "session ptr NULL %x", sched_req->link_hdl);
+		CAM_WARN(CAM_CRM, "session ptr NULL %llx", sched_req->link_hdl);
 		rc = -EINVAL;
 		goto end;
 	}
@@ -2719,7 +2719,7 @@ int cam_req_mgr_schedule_request(
 	if (sched_req->req_id > link->last_flush_id)
 		link->last_flush_id = 0;
 
-	CAM_DBG(CAM_CRM, "link 0x%x req %lld, sync_mode %d",
+	CAM_DBG(CAM_CRM, "link 0x%llx req %lld, sync_mode %d",
 		sched_req->link_hdl, sched_req->req_id, sched_req->sync_mode);
 
 	task_data.type = CRM_WORKQ_TASK_SCHED_REQ;
