@@ -2696,22 +2696,22 @@ int cam_req_mgr_schedule_request(
 	link = (struct cam_req_mgr_core_link *)
 		cam_get_device_priv(sched_req->link_hdl);
 	if (!link) {
-		CAM_DBG(CAM_CRM, "link ptr NULL %llx", sched_req->link_hdl);
+		CAM_DBG(CAM_CRM, "link ptr NULL %x", sched_req->link_hdl);
 		rc = -EINVAL;
 		goto end;
 	}
 
 	session = (struct cam_req_mgr_core_session *)link->parent;
 	if (!session) {
-		CAM_WARN(CAM_CRM, "session ptr NULL %llx", sched_req->link_hdl);
+		CAM_WARN(CAM_CRM, "session ptr NULL %x", sched_req->link_hdl);
 		rc = -EINVAL;
 		goto end;
 	}
 
 	if (sched_req->req_id <= link->last_flush_id) {
-		CAM_INFO(CAM_CRM,
-			"request %d is flushed, last_flush_id to flush %lld",
-			sched_req->req_id, link->last_flush_id);
+		//CAM_INFO(CAM_CRM,
+		//	"request %lld is flushed, last_flush_id to flush %lld",
+		//	sched_req->req_id, link->last_flush_id);
 		rc = -EINVAL;
 		goto end;
 	}
@@ -2719,7 +2719,7 @@ int cam_req_mgr_schedule_request(
 	if (sched_req->req_id > link->last_flush_id)
 		link->last_flush_id = 0;
 
-	CAM_DBG(CAM_CRM, "link 0x%llx req %lld, sync_mode %d",
+	CAM_DBG(CAM_CRM, "link 0x%x req %lld, sync_mode %lld",
 		sched_req->link_hdl, sched_req->req_id, sched_req->sync_mode);
 
 	task_data.type = CRM_WORKQ_TASK_SCHED_REQ;
@@ -2736,8 +2736,8 @@ int cam_req_mgr_schedule_request(
 
 	rc = cam_req_mgr_process_sched_req(link, &task_data);
 
-	CAM_DBG(CAM_REQ, "Open req %lld on link 0x%x with sync_mode %d",
-		sched_req->req_id, sched_req->link_hdl, sched_req->sync_mode);
+	//CAM_DBG(CAM_REQ, "Open req %lld on link 0x%x with sync_mode %lld",
+	//	sched_req->req_id, sched_req->link_hdl, sched_req->sync_mode);
 end:
 	mutex_unlock(&g_crm_core_dev->crm_lock);
 	return rc;

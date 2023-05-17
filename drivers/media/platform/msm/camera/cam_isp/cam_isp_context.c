@@ -2920,7 +2920,7 @@ static int __cam_isp_ctx_config_dev_in_top_state(
 		goto put_ref;
 
 	if (cam_mem_put_cpu_buf((int32_t) cmd->packet_handle))
-		CAM_WARN(CAM_ISP, "Can not put packet address : 0x%llx",
+		CAM_WARN(CAM_ISP, "Can not put packet address : 0x%x",
 			cmd->packet_handle);
 
 	CAM_DBG(CAM_REQ,
