@@ -17,15 +17,14 @@
 #include <linux/pinctrl/pinconf-generic.h>
 #include <linux/pinctrl/pinconf.h>
 #include <linux/pinctrl/pinmux.h>
-#include <linux/pinctrl/pinctrl.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
 #include <linux/slab.h>
 #include <linux/types.h>
 #include <asoc/wcd934x_registers.h>
 
-//#include "core.h"
-//#include "pinctrl-utils.h"
+#include "core.h"
+#include "pinctrl-utils.h"
 
 #define WCD_REG_DIR_CTL WCD934X_CHIP_TIER_CTRL_GPIO_CTL_OE
 #define WCD_REG_VAL_CTL WCD934X_CHIP_TIER_CTRL_GPIO_CTL_DATA
